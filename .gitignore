@@ -1,0 +1,45 @@
+```
+# .gitignore for Docker and Kubernetes environment
+
+# Logs and temporary files
+*.log
+*.pid
+*.out
+*.err
+*.swp
+
+# Docker-related files
+Dockerfile.*
+*.tar
+*.bak
+*.tmp
+docker-compose.override.yml
+
+# Kubernetes-related files
+*.yaml~
+*.yml~
+*.json~
+.kube/
+*.token
+
+# Node modules and dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Python virtual environments
+__pycache__/
+*.py[cod]
+*.pyo
+*.env
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# System files
+.DS_Store
+Thumbs.db
+```
