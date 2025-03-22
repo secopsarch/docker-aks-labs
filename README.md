@@ -6,8 +6,8 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Docker Pulls](https://img.shields.io/badge/docker%20pulls-1k-blue)](https://hub.docker.com/r/yourusername/docker-labs)
-[![Stars](https://img.shields.io/github/stars/yourusername/docker-labs?style=social)](https://github.com/yourusername/docker-labs)
+[![Docker Pulls](https://img.shields.io/badge/docker%20pulls-1k-blue)](https://hub.docker.com/r/secopsarch/docker-labs)
+[![Stars](https://img.shields.io/github/stars/yourusername/docker-labs?style=social)](https://github.com/secopsarch/docker-labs)
 
 🚀 A comprehensive collection of Docker labs and examples for learning container technology from basics to advanced concepts.
 
