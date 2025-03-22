@@ -6,8 +6,8 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Docker Pulls](https://img.shields.io/badge/docker%20pulls-1k-blue)](https://hub.docker.com/r/secopsarch/docker-labs)
-[![Stars](https://img.shields.io/github/stars/yourusername/docker-labs?style=social)](https://github.com/secopsarch/docker-labs)
+[![Docker Pulls](https://img.shields.io/badge/docker%20pulls-1k-blue)](https://hub.docker.com/r/secopsarch/dockerlabs)
+[![Stars](https://img.shields.io/github/stars/yourusername/docker-labs?style=social)](https://github.com/secopsarch/dockerlabs)
 
 🚀 A comprehensive collection of Docker labs and examples for learning container technology from basics to advanced concepts.
 
@@ -51,7 +51,7 @@ pie title Lab Complexity Distribution
 
 \`\`\`bash
 # Clone the repository
-git clone https://github.com/yourusername/docker-labs.git
+git clone https://github.com/secopsarch/dockerlabs.git
 
 # Navigate to specific lab
 cd dockerlabs/lab1  # or lab2
