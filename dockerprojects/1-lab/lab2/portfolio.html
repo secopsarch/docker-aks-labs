@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - TechCorp</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .nav {
+            background: #34495e;
+            padding: 1rem;
+            text-align: center;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        .nav a:hover {
+            color: #3498db;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin: 2rem 0;
+        }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .portfolio-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+        }
+        .portfolio-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+        }
+        .portfolio-content {
+            padding: 1.5rem;
+        }
+        .portfolio-content h3 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+        }
+        .portfolio-content p {
+            color: #7f8c8d;
+            margin: 0 0 1rem 0;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .tag {
+            background: #e0e0e0;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="services.html">Services</a>
+        <a href="contact.html">Contact</a>
+    </div>
+    <h1>Our Portfolio</h1>
+    <div class="portfolio-grid">
+        <div class="portfolio-item">
+            <div class="portfolio-image" style="background-image: url('https://via.placeholder.com/400x200/3498db/ffffff')"></div>
+            <div class="portfolio-content">
+                <h3>Cloud Migration Project</h3>
+                <p>Enterprise-scale cloud migration for a Fortune 500 company</p>
+                <div class="tags">
+                    <span class="tag">AWS</span>
+                    <span class="tag">Azure</span>
+                    <span class="tag">DevOps</span>
+                </div>
+            </div>
+        </div>
+        <div class="portfolio-item">
+            <div class="portfolio-image" style="background-image: url('https://via.placeholder.com/400x200/e74c3c/ffffff')"></div>
+            <div class="portfolio-content">
+                <h3>AI-Powered Analytics</h3>
+                <p>Machine learning solution for predictive maintenance</p>
+                <div class="tags">
+                    <span class="tag">AI/ML</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">TensorFlow</span>
+                </div>
+            </div>
+        </div>
+        <div class="portfolio-item">
+            <div class="portfolio-image" style="background-image: url('https://via.placeholder.com/400x200/2ecc71/ffffff')"></div>
+            <div class="portfolio-content">
+                <h3>Mobile Banking App</h3>
+                <p>Secure and scalable mobile banking solution</p>
+                <div class="tags">
+                    <span class="tag">React Native</span>
+                    <span class="tag">Node.js</span>
+                    <span class="tag">Security</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
