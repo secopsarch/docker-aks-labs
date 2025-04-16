@@ -1,0 +1,24 @@
+---
+# Distribution-specific package names
+centos_packages:
+  - epel-release
+  - dnf-plugins-core
+
+oracle_packages:
+  - oracle-epel-release-el9
+  - dnf-plugins-core
+
+# Common packages required for both distributions
+common_packages:
+  - iptables
+  - iptables-services
+  - kmod
+  - kmod-libs
+  - systemd
+  - procps-ng
+  - coreutils
+  - shadow-utils
+  - conntrack-tools
+  - curl
+  - policycoreutils
+  - container-selinux

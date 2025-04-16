@@ -1,0 +1,7 @@
+---
+- name: Install K3s in WSL
+  hosts: localhost
+  become: true
+  gather_facts: true
+  roles:
+    - k3s_wsl

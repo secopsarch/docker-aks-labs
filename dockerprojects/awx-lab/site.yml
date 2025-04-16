@@ -1,0 +1,6 @@
+---
+- name: Install AWX using Operator
+  hosts: all
+  become: true
+  roles:
+    - awx

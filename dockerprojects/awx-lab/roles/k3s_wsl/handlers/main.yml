@@ -1,0 +1,17 @@
+---
+- name: restart k3s
+  ansible.builtin.shell: |
+    pkill -f k3s
+    sleep 2
+    nohup k3s server --config /etc/rancher/k3s/config.yaml > /var/log/k3s/k3s.log 2>&1 &
+  environment:
+    HOME: "{{ ansible_env.HOME }}"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    K3S_RESOLV_CONF: "/run/systemd/resolve/resolv.conf"
+  listen: "restart k3s"
+
+- name: restart k3s when config changes
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  listen: "config changed"

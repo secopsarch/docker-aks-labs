@@ -1,0 +1,66 @@
+---
+- name: Set distribution-specific packages
+  ansible.builtin.set_fact:
+    distro_packages: "{{ oracle_packages if ansible_distribution == 'OracleLinux' else centos_packages }}"
+
+- name: Install distribution-specific packages
+  ansible.builtin.dnf:
+    name: "{{ distro_packages }}"
+    state: present
+
+- name: Install common required packages
+  ansible.builtin.dnf:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "/etc/rancher/k3s"
+    - "{{ ansible_env.HOME }}/.kube"
+    - "/var/lib/rancher/k3s/server/manifests"
+
+- name: Check Docker service status
+  ansible.builtin.command: systemctl status docker
+  register: docker_service_status
+  changed_when: false
+  failed_when: false
+
+- name: Check Docker command availability
+  ansible.builtin.command: docker version
+  register: docker_version
+  changed_when: false
+  failed_when: false
+
+- name: Check Docker socket
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_socket
+
+- name: Check WSL Docker integration
+  ansible.builtin.command: docker info
+  register: docker_info
+  changed_when: false
+  failed_when: false
+
+- name: Fail if Docker is not properly configured
+  ansible.builtin.fail:
+    msg: |
+      Docker is not properly configured. Please ensure:
+      1. Docker Desktop is running in Windows
+      2. WSL integration is enabled for this distribution in Docker Desktop settings
+      3. Docker service is accessible ({{ docker_socket.stat.exists | ternary('socket exists','socket missing') }})
+      4. You have permissions to access Docker
+      
+      Troubleshooting steps:
+      1. Open Docker Desktop in Windows
+      2. Go to Settings > Resources > WSL Integration
+      3. Enable integration for your Linux distribution
+      4. Restart Docker Desktop and your WSL terminal
+  when: >
+    not docker_socket.stat.exists or
+    docker_info.rc != 0 or
+    docker_version.rc != 0
