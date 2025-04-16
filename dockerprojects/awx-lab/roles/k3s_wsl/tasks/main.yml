@@ -1,0 +1,38 @@
+---
+- name: Check if running in WSL
+  ansible.builtin.command: grep -i microsoft /proc/version
+  register: wsl_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Fail if not running in WSL
+  ansible.builtin.fail:
+    msg: "This role is designed to run only in Windows Subsystem for Linux (WSL)"
+  when: wsl_check.rc != 0
+
+- name: Get current username
+  ansible.builtin.shell: whoami
+  register: current_user
+  changed_when: false
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    user_home: "{% if current_user.stdout == 'root' %}/root{% else %}/home/{{ current_user.stdout }}{% endif %}"
+
+- name: Install prerequisites
+  include_tasks: prerequisites.yml
+
+- name: Install K3s binary
+  include_tasks: install_k3s.yml
+
+- name: Configure K3s
+  include_tasks: configure_k3s.yml
+
+- name: Configure kubectl
+  include_tasks: configure_kubectl.yml
+
+- name: Start K3s
+  include_tasks: start_k3s.yml
+
+- name: Verify K3s installation
+  include_tasks: verify_k3s.yml

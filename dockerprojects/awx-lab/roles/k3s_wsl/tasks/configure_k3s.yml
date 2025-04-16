@@ -1,0 +1,38 @@
+---
+- name: Get current username
+  ansible.builtin.shell: whoami
+  register: current_user
+  changed_when: false
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    user_home: "{% if current_user.stdout == 'root' %}/root{% else %}/home/{{ current_user.stdout }}{% endif %}"
+
+- name: Create k3s config file
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    mode: '0644'
+
+- name: Create k3s service wrapper script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/k3s-wrapper
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      export HOME="{{ user_home }}"
+      export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      export K3S_RESOLV_CONF="/run/systemd/resolve/resolv.conf"
+      
+      case "$1" in
+        start)
+          /usr/local/bin/k3s server --config /etc/rancher/k3s/config.yaml > /var/log/k3s/k3s.log 2>&1 &
+          ;;
+        stop)
+          pkill -f "k3s server"
+          ;;
+        *)
+          echo "Usage: $0 {start|stop}"
+          exit 1
+          ;;
+      esac

@@ -1,0 +1,41 @@
+---
+# K3s configuration for WSL environment
+docker: true
+write-kubeconfig: "{{ user_home }}/.kube/config"
+write-kubeconfig-mode: "644"
+
+# Data directory configuration
+data-dir: "/var/lib/rancher/k3s"
+token: "{{ k3s_token | default('supersecret') }}"
+
+# Network configuration
+bind-address: "127.0.0.1"
+https-listen-port: "{{ k3s_https_port }}"
+node-ip: "127.0.0.1"
+advertise-address: "127.0.0.1"
+cluster-cidr: "10.42.0.0/16"
+service-cidr: "10.43.0.0/16"
+flannel-iface: "eth0"
+flannel-backend: "{{ k3s_flannel_backend }}"
+
+# Security settings
+kube-apiserver-arg:
+  - "allow-privileged=true"
+  - "service-account-lookup=true"
+  - "service-node-port-range=30000-32767"
+
+# Disable unnecessary components
+disable:
+{% for item in k3s_config.disable %}
+  - {{ item }}
+{% endfor %}
+
+# Storage configuration
+default-local-storage-path: "/var/lib/rancher/k3s/storage"
+
+# WSL specific settings
+disable-network-policy: true
+disable-cloud-controller: true
+disable-helm-controller: true
+no-deploy: servicelb
+cluster-init: true

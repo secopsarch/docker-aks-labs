@@ -1,0 +1,24 @@
+---
+# K3s version to install
+k3s_version: "v1.27.1+k3s1"
+
+# Network settings
+k3s_https_port: 6553  # Changed from default 6443 to avoid conflicts
+k3s_flannel_backend: "host-gw"
+
+# K3s configuration
+k3s_config:
+  disable:
+    - traefik
+    - servicelb
+    - metrics-server
+  docker: true
+  write_kubeconfig_mode: "644"
+
+# Binary paths
+k3s_binary_path: /usr/local/bin/k3s
+kubectl_binary_path: /usr/local/bin/kubectl
+
+# WSL specific settings
+use_systemd: true
+kubeconfig_path: "$HOME/.kube/config"

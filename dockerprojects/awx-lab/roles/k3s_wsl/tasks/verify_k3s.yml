@@ -1,0 +1,33 @@
+---
+- name: Verify K3s is running
+  ansible.builtin.command: systemctl is-active k3s
+  register: k3s_status
+  changed_when: false
+  failed_when: k3s_status.stdout != "active"
+
+- name: Get cluster info
+  ansible.builtin.command: kubectl cluster-info
+  register: cluster_info
+  changed_when: false
+  environment:
+    KUBECONFIG: "{{ ansible_env.HOME }}/.kube/config"
+
+- name: Verify node status
+  ansible.builtin.command: kubectl get nodes
+  register: node_status
+  changed_when: false
+  failed_when: "'Ready' not in node_status.stdout"
+  environment:
+    KUBECONFIG: "{{ ansible_env.HOME }}/.kube/config"
+
+- name: Display cluster information
+  ansible.builtin.debug:
+    msg: |
+      K3s Cluster Status:
+      ==================
+      Service Status: {{ k3s_status.stdout }}
+      Cluster Info:
+      {{ cluster_info.stdout }}
+      
+      Node Status:
+      {{ node_status.stdout }}

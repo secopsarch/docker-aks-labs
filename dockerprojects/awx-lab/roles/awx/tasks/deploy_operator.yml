@@ -1,0 +1,58 @@
+---
+- name: Create AWX namespace
+  kubernetes.core.k8s:
+    name: "{{ kubernetes_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add AWX Operator repository
+  kubernetes.core.helm_repository:
+    name: awx-operator
+    repo_url: https://ansible.github.io/awx-operator/
+
+- name: Update Helm repositories
+  ansible.builtin.command: helm repo update
+  changed_when: false
+
+- name: Install AWX Operator using Helm
+  kubernetes.core.helm:
+    name: awx-operator
+    chart_ref: awx-operator/awx-operator
+    release_namespace: "{{ kubernetes_namespace }}"
+    create_namespace: true
+    wait: true
+    values:
+      image:
+        repository: "quay.io/ansible/awx-operator"
+        tag: "{{ awx_operator_version }}"
+      watchNamespace: "{{ kubernetes_namespace }}"
+      nodeSelector:
+        kubernetes.io/os: linux
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "512Mi"
+        limits:
+          cpu: "400m"
+          memory: "1Gi"
+
+- name: Wait for AWX Operator pod to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ kubernetes_namespace }}"
+    label_selectors:
+      - control-plane=controller-manager
+  register: operator_pod
+  until: 
+    - operator_pod.resources is defined
+    - operator_pod.resources | length > 0
+    - operator_pod.resources[0].status.phase == "Running"
+  retries: 30
+  delay: 10
+
+- name: Get operator logs if deployment fails
+  ansible.builtin.command: kubectl logs -n {{ kubernetes_namespace }} -l control-plane=controller-manager --tail=100
+  register: operator_logs
+  when: operator_pod.resources is undefined or operator_pod.resources | length == 0
+  ignore_errors: true

@@ -1,0 +1,36 @@
+---
+- name: Get AWX service information
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Service
+    namespace: "{{ kubernetes_namespace }}"
+    label_selectors:
+      - app.kubernetes.io/name={{ awx_resource_name }}
+  register: awx_service
+
+- name: Get node IP
+  ansible.builtin.shell:
+    cmd: "kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type==\"InternalIP\")].address}'"
+  register: node_ip
+
+- name: Display AWX access information
+  ansible.builtin.debug:
+    msg: |
+      AWX has been successfully deployed!
+      
+      Access AWX at: http://{{ node_ip.stdout }}:30080
+      Username: {{ admin_user }}
+      Password: {{ admin_password }}
+      
+      Note: It may take a few minutes for all services to be fully ready.
+      You can check the status with: kubectl get pods -n {{ kubernetes_namespace }}
+
+- name: Verify AWX web service is responding
+  ansible.builtin.uri:
+    url: "http://{{ node_ip.stdout }}:30080/api/v2/"
+    return_content: yes
+  register: awx_api_check
+  until: awx_api_check.status == 200
+  retries: 30
+  delay: 10
+  ignore_errors: yes
