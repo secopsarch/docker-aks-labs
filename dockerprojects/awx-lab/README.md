@@ -1,99 +1,132 @@
 # AWX Local Development Environment
 
-This project contains two Ansible playbooks for setting up AWX in a local WSL development environment:
-1. K3s installation playbook for WSL
-2. AWX installation playbook using the installed K3s cluster
+This project sets up AWX in a local WSL development environment using K3s and Docker Desktop.
 
 ## Prerequisites
 
+### System Requirements
 - Windows 10/11 with WSL2
-- Oracle Linux (OEL) 9 or CentOS 9 Stream in WSL
+- Oracle Linux (OEL) 9 in WSL
+- Minimum 8GB RAM (recommended)
+- Minimum 4 CPU cores (recommended)
+- 20GB free disk space
+
+### Software Requirements
 - Docker Desktop with WSL integration enabled
-- Minimum 4GB RAM
-- Minimum 2 CPU cores
-- Root or sudo access
+- K3s v1.32.x or later
+- Python 3.9 or later
+- Helm v3.17 or later
+- kubectl configured to access K3s cluster
 
-## Installation Steps
-
-### 1. Install K3s First
-
+### Python Dependencies
 ```bash
-# Install K3s in WSL
-ansible-playbook -i inventory k3s_setup.yml
+pip3 install kubernetes>=12.0.0 openshift>=0.12.0
 ```
 
-Verify K3s installation:
+## Pre-Installation Checks
+
+1. Verify K3s is running:
 ```bash
 kubectl get nodes
 ```
 
-### 2. Install AWX
-
-Once K3s is up and running:
-
+2. Verify Docker Desktop integration:
 ```bash
-# Install AWX
+docker info
+```
+
+3. Check default storage class:
+```bash
+kubectl get storageclass
+```
+
+4. Verify Helm installation:
+```bash
+helm version
+```
+
+## Installation Steps
+
+1. Clone this repository:
+```bash
+git clone <repository-url>
+cd awx-lab
+```
+
+2. Review and update configuration (optional):
+   - Edit `roles/awx/defaults/main.yml` for AWX settings
+   - Default credentials are:
+     - Username: admin
+     - Password: password123 (change this!)
+
+3. Install AWX:
+```bash
 ansible-playbook -i inventory site.yml
 ```
 
-## Configuration
+4. Monitor the deployment:
+```bash
+kubectl get pods -n awx -w
+```
 
-### K3s Configuration
-Default variables can be modified in `roles/k3s_wsl/defaults/main.yml`:
-- `k3s_version`: Version of K3s to install
-- `k3s_config`: K3s configuration options
-- Network and user settings
+## Access AWX
 
-### AWX Configuration
-AWX variables can be modified in `roles/awx/defaults/main.yml`:
-- `awx_operator_version`: Version of AWX Operator to install
-- `kubernetes_namespace`: Kubernetes namespace for AWX
-- `admin_user`: Default admin username
-- `admin_password`: Default admin password
-
-## Accessing AWX
-
-After successful deployment, AWX will be available at:
-- URL: `http://<your-server-ip>:30080`
-- Default username: `admin`
-- Default password: `password`
+Once deployed, AWX will be available at:
+- URL: `http://localhost:30080`
+- Default credentials:
+  - Username: admin
+  - Password: password123
 
 ## Troubleshooting
 
-### K3s Issues
-1. Check K3s service status:
+### Common Issues
+
+1. Storage Class Issues:
 ```bash
-systemctl status k3s
+kubectl get storageclass
+kubectl describe storageclass local-path
 ```
 
-2. View K3s logs:
-```bash
-journalctl -u k3s
-```
-
-### AWX Issues
-1. Check pod status:
+2. Pod Issues:
 ```bash
 kubectl get pods -n awx
+kubectl describe pod <pod-name> -n awx
+kubectl logs <pod-name> -n awx
 ```
 
-2. View pod logs:
+3. AWX Operator Issues:
 ```bash
-kubectl logs -n awx <pod-name>
+kubectl logs -n awx -l control-plane=controller-manager
 ```
+
+4. Persistence Issues:
+```bash
+kubectl get pvc -n awx
+kubectl describe pvc <pvc-name> -n awx
+```
+
+## Resource Requirements
+
+AWX components require:
+- Database: 
+  - CPU: 500m
+  - Memory: 2Gi
+  - Storage: 8Gi
+- Web:
+  - CPU: 500m
+  - Memory: 1Gi
+- Task:
+  - CPU: 500m
+  - Memory: 2Gi
+- Projects Storage: 8Gi
 
 ## Cleanup
 
-To remove AWX and all its components:
+To remove AWX:
 ```bash
 kubectl delete namespace awx
 ```
 
-To uninstall K3s:
-```bash
-/usr/local/bin/k3s-uninstall.sh
-```
-
 ## Note
 
-This setup is intended for local development/testing and is not recommended for production use.
+This setup is intended for local development/testing. For production environments, refer to the official AWX documentation for hardened deployment configurations.

@@ -14,7 +14,9 @@
         service_type: nodeport
         nodeport_port: "{{ node_port }}"
         postgres_storage_class: "{{ k3s_storage_class }}"
-        postgres_storage_requirements: "{{ postgres_storage_requirements }}"
+        postgres_storage_requirements:
+          requests:
+            storage: "{{ postgres_storage_requirements }}"
         projects_persistence: true
         projects_storage_class: "{{ k3s_storage_class }}"
         projects_storage_size: "{{ projects_persistence_size }}"

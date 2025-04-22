@@ -1,6 +1,6 @@
 ---
 # AWX Version and settings
-awx_operator_version: "2.10.0"
+awx_operator_version: "2.11.0"  # Latest stable version
 kubernetes_namespace: "awx"
 awx_resource_name: "awx"
 
@@ -34,3 +34,7 @@ postgres_resource_requirements:
   limits:
     cpu: "1000m"
     memory: "4Gi"
+
+# Git configuration for AWX operator
+git_packages:
+  - git
