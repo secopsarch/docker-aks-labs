@@ -1,0 +1,40 @@
+---
+# AWX Version and settings
+awx_operator_version: "2.11.0"  # Latest stable version
+kubernetes_namespace: "awx"
+awx_resource_name: "awx"
+
+# System requirements
+min_memory_mb: 4096
+min_cpu_cores: 2
+
+# Default admin user
+admin_user: "admin"
+admin_password: "password123"  # Change this in production
+
+# Resource requirements
+awx_web_cpu_request: "500m"
+awx_web_mem_request: "1Gi"
+awx_task_cpu_request: "500m"
+awx_task_mem_request: "2Gi"
+
+# Storage configuration
+k3s_storage_class: "local-path"
+postgres_storage_requirements: "8Gi"
+projects_persistence_size: "8Gi"
+
+# Service configuration
+node_port: 30080
+
+# PostgreSQL configuration
+postgres_resource_requirements:
+  requests:
+    cpu: "500m"
+    memory: "2Gi"
+  limits:
+    cpu: "1000m"
+    memory: "4Gi"
+
+# Git configuration for AWX operator
+git_packages:
+  - git

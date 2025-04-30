@@ -1,0 +1,59 @@
+---
+- name: Create AWX instance
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: awx.ansible.com/v1beta1
+      kind: AWX
+      metadata:
+        name: "{{ awx_resource_name }}"
+        namespace: "{{ kubernetes_namespace }}"
+      spec:
+        admin_user: "{{ admin_user }}"
+        admin_password_secret: awx-admin-password
+        service_type: nodeport
+        nodeport_port: "{{ node_port }}"
+        postgres_storage_class: "{{ k3s_storage_class }}"
+        postgres_storage_requirements:
+          requests:
+            storage: "{{ postgres_storage_requirements }}"
+        projects_persistence: true
+        projects_storage_class: "{{ k3s_storage_class }}"
+        projects_storage_size: "{{ projects_persistence_size }}"
+        web_resource_requirements:
+          requests:
+            cpu: "{{ awx_web_cpu_request }}"
+            memory: "{{ awx_web_mem_request }}"
+        task_resource_requirements:
+          requests:
+            cpu: "{{ awx_task_cpu_request }}"
+            memory: "{{ awx_task_mem_request }}"
+
+- name: Create admin password secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: awx-admin-password
+        namespace: "{{ kubernetes_namespace }}"
+      stringData:
+        password: "{{ admin_password }}"
+      type: Opaque
+
+- name: Wait for AWX deployment
+  kubernetes.core.k8s_info:
+    api_version: awx.ansible.com/v1beta1
+    kind: AWX
+    name: "{{ awx_resource_name }}"
+    namespace: "{{ kubernetes_namespace }}"
+  register: awx_deployment
+  until: 
+    - awx_deployment.resources is defined
+    - awx_deployment.resources | length > 0
+    - awx_deployment.resources[0].status is defined
+    - awx_deployment.resources[0].status.deployed is defined
+    - awx_deployment.resources[0].status.deployed == true
+  retries: 60
+  delay: 30

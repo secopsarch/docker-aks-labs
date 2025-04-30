@@ -1,0 +1,61 @@
+---
+- name: Get current username
+  ansible.builtin.shell: whoami
+  register: current_user
+  changed_when: false
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    user_home: "{% if current_user.stdout == 'root' %}/root{% else %}/home/{{ current_user.stdout }}{% endif %}"
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "/var/lib/rancher/k3s"
+    - "/var/log/k3s"
+
+- name: Stop any running K3s processes
+  ansible.builtin.shell: |
+    pkill -f "k3s server" || true
+    sleep 2
+  ignore_errors: true
+
+- name: Start K3s server
+  ansible.builtin.shell: |
+    nohup k3s server \
+      --docker \
+      --write-kubeconfig={{ user_home }}/.kube/config \
+      --write-kubeconfig-mode=644 \
+      --disable=traefik \
+      --disable=servicelb \
+      > /var/log/k3s/k3s.log 2>&1 &
+  environment:
+    HOME: "{{ user_home }}"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  async: 60
+  poll: 0
+
+- name: Wait for kubeconfig
+  ansible.builtin.wait_for:
+    path: "{{ user_home }}/.kube/config"
+    state: present
+    delay: 10
+    timeout: 300
+
+- name: Add delay for K3s API server startup
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: Check if K3s is running
+  ansible.builtin.command: kubectl get nodes
+  environment:
+    KUBECONFIG: "{{ user_home }}/.kube/config"
+    HOME: "{{ user_home }}"
+  register: node_status
+  retries: 12
+  delay: 10
+  until: node_status.rc == 0
+  changed_when: false

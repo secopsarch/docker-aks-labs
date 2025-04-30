@@ -1,0 +1,65 @@
+---
+- name: Create AWX namespace
+  kubernetes.core.k8s:
+    name: "{{ kubernetes_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Create temporary directory for AWX operator
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: awx-operator
+  register: temp_dir
+
+- name: Clone AWX Operator repository
+  ansible.builtin.git:
+    repo: https://github.com/ansible/awx-operator.git
+    dest: "{{ temp_dir.path }}"
+    version: "{{ awx_operator_version }}"
+
+- name: Create kustomization.yaml for AWX Operator
+  ansible.builtin.copy:
+    dest: "{{ temp_dir.path }}/kustomization.yaml"
+    content: |
+      apiVersion: kustomize.config.k8s.io/v1beta1
+      kind: Kustomization
+      resources:
+        - config/default
+      namespace: {{ kubernetes_namespace }}
+      images:
+        - name: quay.io/ansible/awx-operator
+          newTag: {{ awx_operator_version }}
+
+- name: Deploy AWX Operator using kubectl and kustomize
+  ansible.builtin.command:
+    cmd: /usr/local/bin/kubectl apply -k {{ temp_dir.path }}
+  register: deploy_result
+  changed_when: "'created' in deploy_result.stderr or 'configured' in deploy_result.stderr"
+  environment:
+    PATH: /usr/local/bin:{{ ansible_env.PATH }}
+    KUBECONFIG: "{{ ansible_env.HOME }}/.kube/config"
+
+- name: Wait for AWX Operator pod to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ kubernetes_namespace }}"
+    label_selectors:
+      - control-plane=controller-manager
+  register: operator_pod
+  until: 
+    - operator_pod.resources is defined
+    - operator_pod.resources | length > 0
+    - operator_pod.resources[0].status.phase == "Running"
+  retries: 30
+  delay: 10
+
+- name: Get operator logs if deployment fails
+  ansible.builtin.command:
+    cmd: /usr/local/bin/kubectl logs -n {{ kubernetes_namespace }} -l control-plane=controller-manager --tail=100
+  register: operator_logs
+  when: operator_pod.resources is undefined or operator_pod.resources | length == 0
+  ignore_errors: true
+  environment:
+    PATH: /usr/local/bin:{{ ansible_env.PATH }}
+    KUBECONFIG: "{{ ansible_env.HOME }}/.kube/config"

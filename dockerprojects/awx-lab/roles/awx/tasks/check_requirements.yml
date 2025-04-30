@@ -1,0 +1,45 @@
+---
+- name: Get current username
+  ansible.builtin.shell: whoami
+  register: current_user
+  changed_when: false
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    user_home: "{% if current_user.stdout == 'root' %}/root{% else %}/home/{{ current_user.stdout }}{% endif %}"
+
+- name: Check memory requirements
+  ansible.builtin.assert:
+    that:
+      - ansible_memtotal_mb >= min_memory_mb
+    fail_msg: "Minimum {{ min_memory_mb }}MB of memory required for AWX. Found: {{ ansible_memtotal_mb }}MB"
+
+- name: Check CPU requirements
+  ansible.builtin.assert:
+    that:
+      - ansible_processor_cores >= min_cpu_cores
+    fail_msg: "Minimum {{ min_cpu_cores }} CPU cores required for AWX. Found: {{ ansible_processor_cores }}"
+
+- name: Check if kubectl is configured
+  ansible.builtin.command: kubectl get nodes
+  register: kubectl_check
+  changed_when: false
+  environment:
+    KUBECONFIG: "{{ user_home }}/.kube/config"
+    PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
+
+- name: Fail if kubectl is not configured
+  ansible.builtin.fail:
+    msg: "kubectl is not properly configured. Please ensure your Kubernetes cluster is running and accessible."
+  when: kubectl_check.rc != 0
+
+- name: Check if helm is installed
+  ansible.builtin.command: helm version --short
+  register: helm_version
+  changed_when: false
+  failed_when: false
+
+- name: Install helm if not present
+  ansible.builtin.shell: |
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  when: helm_version.rc != 0

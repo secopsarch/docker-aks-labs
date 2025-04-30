@@ -1,0 +1,47 @@
+---
+- name: Get current username
+  ansible.builtin.shell: whoami
+  register: current_user
+  changed_when: false
+
+- name: Set user home directory
+  ansible.builtin.set_fact:
+    user_home: "{% if current_user.stdout == 'root' %}/root{% else %}/home/{{ current_user.stdout }}{% endif %}"
+
+- name: Create .bashrc if it doesn't exist
+  ansible.builtin.file:
+    path: "{{ user_home }}/.bashrc"
+    state: touch
+    mode: '0644'
+    owner: "{{ current_user.stdout }}"
+    group: "{{ current_user.stdout }}"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Create kubectl symlink
+  ansible.builtin.file:
+    src: "{{ k3s_binary_path }}"
+    dest: "{{ kubectl_binary_path }}"
+    state: link
+
+- name: Set KUBECONFIG in bashrc
+  ansible.builtin.lineinfile:
+    path: "{{ user_home }}/.bashrc"
+    line: 'export KUBECONFIG=$HOME/.kube/config'
+    state: present
+
+- name: Create .kube directory
+  ansible.builtin.file:
+    path: "{{ user_home }}/.kube"
+    state: directory
+    mode: '0755'
+    owner: "{{ current_user.stdout }}"
+    group: "{{ current_user.stdout }}"
+
+- name: Set kubeconfig permissions
+  ansible.builtin.file:
+    path: "{{ user_home }}/.kube/config"
+    mode: '0600'
+    owner: "{{ current_user.stdout }}"
+    group: "{{ current_user.stdout }}"
+  ignore_errors: yes

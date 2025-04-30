@@ -1,0 +1,43 @@
+---
+- name: Verify Kubernetes cluster access
+  ansible.builtin.command: kubectl cluster-info
+  register: cluster_info
+  changed_when: false
+
+- name: Verify node readiness
+  ansible.builtin.command: kubectl get nodes
+  register: nodes_status
+  changed_when: false
+
+- name: Verify storage class exists
+  kubernetes.core.k8s_info:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: local-path
+  register: storage_class
+  ignore_errors: true
+
+- name: Create local-path storage class if not exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: local-path
+      provisioner: rancher.io/local-path
+      volumeBindingMode: WaitForFirstConsumer
+      reclaimPolicy: Delete
+  when: storage_class.resources | length == 0
+
+- name: Set local-path as default storage class
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: local-path
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "true"
+  when: storage_class.resources | length == 0

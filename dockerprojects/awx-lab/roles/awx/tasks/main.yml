@@ -1,0 +1,15 @@
+---
+- name: Check system requirements
+  include_tasks: check_requirements.yml
+
+- name: Install system dependencies
+  include_tasks: install_dependencies.yml
+
+- name: Deploy AWX Operator
+  include_tasks: deploy_operator.yml
+
+- name: Deploy AWX instance
+  include_tasks: deploy_awx.yml
+
+- name: Verify AWX deployment
+  include_tasks: verify_deployment.yml
