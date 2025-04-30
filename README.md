@@ -109,7 +109,6 @@ gantt
 ## 📫 Support
 
 - 📧 Email: support@dockerlabs.com
-- 💬 Discord: [Join our community](https://discord.gg/dockerlabs)
 - 🐦 Twitter: [@dockerlabs](https://twitter.com/dockerlabs)
 
 ## 📈 Repository Activity
